@@ -21,7 +21,7 @@ function M.bufdir (bufnr)
     }
 
     local ft = vim.bo [bufnr].filetype
-    
+
     if t [ft] then
         return t [ft] (bufnr)
     end

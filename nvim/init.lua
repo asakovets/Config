@@ -94,9 +94,9 @@ require ("lazy").setup {
         },
 
         {
-                "ThePrimeagen/harpoon",
-                branch = "harpoon2",
-                dependencies = { "nvim-lua/plenary.nvim" }
+            "ThePrimeagen/harpoon",
+            branch = "harpoon2",
+            dependencies = { "nvim-lua/plenary.nvim" }
         },
 
         {'echasnovski/mini.ai', config = true},
@@ -167,11 +167,11 @@ nmap('<leader>O', 'O<esc>')
 nmap('<leader>pf', function ()
     local myproj = myproject ()
     if myproj then
-    require ("telescope.builtin").find_files ({
-        search_dirs = { myproj },
-        hidden = true,
-        find_command = { "rg", "--files", "--hidden", "--color", "never", "--glob", "!**/.git/*" },
-    })
+        require ("telescope.builtin").find_files ({
+            search_dirs = { myproj },
+            hidden = true,
+            find_command = { "rg", "--files", "--hidden", "--color", "never", "--glob", "!**/.git/*" },
+        })
     end
 end, {silent=true, desc='Find file in project'})
 
@@ -234,13 +234,13 @@ local autocmd = vim.api.nvim_create_autocmd
 local yankgrp = augroup ("yankgrp", {})
 
 autocmd('TextYankPost', {
-        group = yankgrp,
-        pattern = '*',
-        callback = function()
-            vim.highlight.on_yank({
-                higroup = 'IncSearch',
-                timeout = 100,
-            })
+    group = yankgrp,
+    pattern = '*',
+    callback = function()
+        vim.highlight.on_yank({
+            higroup = 'IncSearch',
+            timeout = 100,
+        })
     end,
 })
 

@@ -87,7 +87,7 @@ cmp.setup {
         { name = "nvim_lsp", },
         { name = "path", },
     },
-    
+
     completion = {
         -- autocomplete = false,
     },
@@ -130,7 +130,7 @@ vim.api.nvim_create_autocmd ('LspAttach', {
 
         vim.bo [e.buf].formatexpr = nil
         vim.bo [e.buf].omnifunc = nil
-        
+
         local client = vim.lsp.get_client_by_id(e.data.client_id)
         if client.server_capabilities.signatureHelpProvider then
             -- require('lsp-overloads').setup(client, { })
@@ -230,7 +230,7 @@ nmap("<leader>5", function() harpoon:list ():select (5) end, 'Harpoon 5')
 nmap("<leader>6", function() harpoon:list ():select (6) end, 'Harpoon 6')
 
 require ('mini.surround').setup ({
-      mappings = {
+    mappings = {
         add = "<leader>sa", -- Add surrounding in Normal and Visual modes
         delete = "<leader>sd", -- Delete surrounding
         find = "<leader>sf", -- Find surrounding (to the right)
@@ -238,5 +238,5 @@ require ('mini.surround').setup ({
         highlight = "<leader>sh", -- Highlight surrounding
         replace = "<leader>sr", -- Replace surrounding
         update_n_lines = "<leader>sn", -- Update `n_lines`
-      },
+    },
 })
