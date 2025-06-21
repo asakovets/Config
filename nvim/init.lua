@@ -59,10 +59,10 @@ vim.opt.rtp:prepend(lazypath)
 require ("lazy").setup {
 
     spec = {
-        {
-            'willothy/moveline.nvim',
-            build = "make"
-        },
+        -- {
+        --     'willothy/moveline.nvim',
+        --     build = "make"
+        -- },
         {
             'nvim-telescope/telescope.nvim',
             dependencies = {
@@ -78,8 +78,8 @@ require ("lazy").setup {
         'neovim/nvim-lspconfig',
         {
             'lewis6991/gitsigns.nvim',
-            dir = "~/plugins/gitsigns.nvim/",
-            dev = false,
+            -- dir = "~/plugins/gitsigns.nvim/",
+            -- dev = false,
         },
         'stevearc/oil.nvim',
         'ggandor/leap.nvim',
@@ -151,7 +151,7 @@ nmap('<leader>bk', ':bd<cr>', 'Kill buffer')
 -- <leader>f (find & file)
 nmap('<leader>f\'', '<cmd>Telescope marks<cr>')
 nmap('<leader>f<cr>', '<cmd>Telescope resume<cr>')
-nmap('<leader>fc', '<cmd>e ~/.config/nvim/init.lua<cr>')
+nmap('<leader>fc', '<cmd>e $MYVIMRC<cr>')
 nmap('<leader>ff', function () grep ({cwd = myproject ()}) end )
 nmap('<leader>fg', '<cmd>Telescope git_files<cr>')
 nmap('<leader>fs', '<cmd>:w<cr>', 'Save file' )
