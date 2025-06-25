@@ -176,7 +176,7 @@ nmap('<leader>pf', function ()
     local myproj = myproject ()
     if myproj then
         require ("telescope.builtin").find_files ({
-            search_dirs = { myproj },
+            cwd = myproj,
             hidden = true,
             find_command = { "rg", "--files", "--hidden", "--color", "never", "--glob", "!**/.git/*" },
         })
