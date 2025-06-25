@@ -135,6 +135,9 @@ local function grep (opts)
     require ("multigrep").live_multigrep (opts)
 end
 
+nmap('n', 'nzz')
+nmap('N', 'Nzz')
+
 nmap('<esc>', ':noh<cr><esc>')
 -- <leader>
 nmap('<leader><space>', require('telescope.builtin').buffers, '[ ] Find existing buffers')
@@ -256,3 +259,4 @@ vim.api.nvim_create_user_command("DeleteTrailingWhitespace",
     end , {})
 
 require ("plugins")
+local _, _ = pcall (require, "local_custom")
