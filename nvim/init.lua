@@ -142,6 +142,9 @@ end
 
 nmap('n', 'nzz')
 nmap('N', 'Nzz')
+nmap('<Tab>', '%')
+vmap('<Tab>', '%')
+
 
 nmap('<esc>', ':noh<cr><esc>')
 -- <leader>
