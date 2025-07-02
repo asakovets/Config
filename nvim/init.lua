@@ -205,6 +205,7 @@ nmap('<leader>tn', '<cmd>set number!<cr>')
 nmap('<leader>ts', '<cmd>set spell!<cr>')
 nmap('<leader>tw', '<cmd>set wrap!<cr>')
 nmap('<leader>tk', ':tabclose<cr>', "Kill tab")
+nmap('<leader>tt', function () vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' }) end)
 
 -- u (inspect)
 nmap('<leader>ui', '<cmd>Inspect<cr>')
