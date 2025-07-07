@@ -246,6 +246,12 @@ function myproject()
     return u.get_root() or u.bufdir (0)
 end
 
+local function set_transparency ()
+    vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+end
+
+set_transparency ()
+
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
 
