@@ -142,8 +142,8 @@ end
 
 nmap('n', 'nzz')
 nmap('N', 'Nzz')
-nmap('<Tab>', '%')
-vmap('<Tab>', '%')
+-- nmap('<Tab>', '%')
+-- vmap('<Tab>', '%')
 
 
 nmap('<esc>', ':noh<cr><esc>')
@@ -158,6 +158,7 @@ nmap('<leader>bn', '<cmd>bn<cr>', 'Next buffer')
 nmap('<leader>bp', '<cmd>bp<cr>', 'Previous buffer')
 nmap('<leader>bN', '<cmd>new<cr>', 'New empty buffer')
 nmap('<leader>bk', ':bd<cr>', 'Kill buffer')
+nmap('<leader>br', ':e! %<cr>', 'Reload buffer')
 
 -- <leader>f (find & file)
 nmap('<leader>f\'', '<cmd>Telescope marks<cr>')
@@ -167,6 +168,11 @@ nmap('<leader>ff', function () grep ({cwd = myproject ()}) end )
 nmap('<leader>fg', '<cmd>Telescope git_files<cr>')
 nmap('<leader>fs', '<cmd>:w<cr>', 'Save file' )
 nmap('<leader>fm', '<cmd>lua require("util").openfm()<cr>', 'Open file manager')
+nmap('<leader>fd', function ()
+    require ("telescope.builtin").find_files ({
+        cwd = require ("util").bufdir (0)
+    })
+end)
 
 nmap('<leader>fr', '<cmd>Telescope oldfiles<cr>')
 --
