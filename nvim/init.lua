@@ -43,6 +43,9 @@ if vim.g.neovide then
     vim.g.neovide_cursor_animate_command_line = false
     vim.g.neovide_scroll_animation_far_lines = 0
     vim.g.neovide_scroll_animation_length = 0
+
+    vim.keymap.set({"n", "v"}, "<C-+>", function() vim.g.neovide_scale_factor = (vim.g.neovide_scale_factor or 1.0) + 0.1 end)
+    vim.keymap.set({"n", "v"}, "<C-->", function() vim.g.neovide_scale_factor = (vim.g.neovide_scale_factor or 1.0) - 0.1 end)
 end
 
 
