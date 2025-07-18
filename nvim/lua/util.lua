@@ -30,6 +30,13 @@ function M.bufdir (bufnr)
 
 end
 
+function M.find_files (opts)
+    if vim.fn.has "win32" then
+        opts.cwd = opts.cwd:gsub("/", "\\")
+    end
+    require ("telescope.builtin").find_files (opts)
+end
+
 local function oil (dir)
     require ("oil").open (dir, nil, nil)
 end

@@ -172,7 +172,7 @@ nmap('<leader>fg', '<cmd>Telescope git_files<cr>')
 nmap('<leader>fs', '<cmd>:w<cr>', 'Save file' )
 nmap('<leader>fm', '<cmd>lua require("util").openfm()<cr>', 'Open file manager')
 nmap('<leader>fd', function ()
-    require ("telescope.builtin").find_files ({
+    require ("util").find_files ({
         cwd = require ("util").bufdir (0)
     })
 end)
@@ -187,10 +187,8 @@ nmap('<leader>O', 'O<esc>')
 nmap('<leader>pf', function ()
     local myproj = myproject ()
     if myproj then
-        require ("telescope.builtin").find_files ({
+        require ("util").find_files ({
             cwd = myproj,
-            hidden = true,
-            find_command = { "rg", "--files", "--hidden", "--color", "never", "--glob", "!**/.git/*" },
         })
     end
 end, {silent=true, desc='Find file in project'})

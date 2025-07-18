@@ -5,7 +5,11 @@ require ("telescope").setup {
                 ['<M-n>'] = require("telescope.actions").insert_original_cword,
                 ['<M-N>'] = require("telescope.actions").insert_original_cWORD,
             }
-        }
+        },
+
+        path_display = {
+            "filename_first"
+        },
     },
 
     pickers = {
@@ -16,9 +20,12 @@ require ("telescope").setup {
 }
 
 vim.keymap.set ("n", "<leader>ep", function ()
-    require ("telescope.builtin").find_files {
+    -- require ("telescope.builtin").find_files {
+    --     cwd = vim.fs.joinpath (vim.fn.stdpath ("data"), "lazy")
+    -- }
+    require ("util").find_files ({
         cwd = vim.fs.joinpath (vim.fn.stdpath ("data"), "lazy")
-    }
+    })
 end)
 
 require("nvim-treesitter.configs").setup({
