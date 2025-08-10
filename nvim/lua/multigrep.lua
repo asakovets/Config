@@ -11,7 +11,7 @@ local live_multigrep = function(opts)
     opts = opts or {}
     opts.cwd = opts.cwd or vim.uv.cwd()
 
-    if vim.fn.has "win32" then
+    if vim.loop.os_uname().sysname == "Windows_NT" then
         opts.cwd = opts.cwd:gsub("/", "\\")
     end
 

@@ -282,3 +282,8 @@ vim.api.nvim_create_user_command("DeleteTrailingWhitespace",
 
 require ("plugins")
 local _, _ = pcall (require, "local_custom")
+
+-- quirks
+if os.getenv ("TERM_PROGRAM") == "Apple_Terminal" then
+    o.termguicolors = false
+end
