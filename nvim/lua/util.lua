@@ -1,13 +1,13 @@
-local M = {}
+local M = { }
 
-function M.get_root()
-    local clients = vim.lsp.get_clients({ bufnr = 0 })
-    for _, client in pairs(clients) do
+function M.get_root ()
+    local clients = vim.lsp.get_clients ({ bufnr = 0 })
+    for _, client in pairs (clients) do
         if client.root_dir then
             return client.root_dir
         end
     end
-    return vim.fs.root(M.bufdir (0), {
+    return vim.fs.root (M.bufdir (0), {
         '.git', 
         '.hg', 
         '.projectile',
@@ -31,8 +31,8 @@ function M.bufdir (bufnr)
 end
 
 function M.find_files (opts)
-    if vim.loop.os_uname().sysname == "Windows_NT" then
-        opts.cwd = opts.cwd:gsub("/", "\\")
+    if vim.loop.os_uname ().sysname == "Windows_NT" then
+        opts.cwd = opts.cwd:gsub ("/", "\\")
     end
     require ("telescope.builtin").find_files (opts)
 end

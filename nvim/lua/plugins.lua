@@ -3,8 +3,8 @@ local function setup_telescope ()
         defaults = {
             mappings = {
                 i = {
-                    ['<M-n>'] = require("telescope.actions").insert_original_cword,
-                    ['<M-N>'] = require("telescope.actions").insert_original_cWORD,
+                    ['<M-n>'] = require ("telescope.actions").insert_original_cword,
+                    ['<M-N>'] = require ("telescope.actions").insert_original_cWORD,
                 }
             },
 
@@ -22,7 +22,7 @@ local function setup_telescope ()
 end
 
 local function setup_treesitter ()
-    require("nvim-treesitter.configs").setup({
+    require ("nvim-treesitter.configs").setup ({
         -- A list of parser names, or "all"
         ensure_installed = {
             "c", "lua", "cpp", "groovy", "java", "kotlin", "python"
@@ -44,16 +44,16 @@ local function setup_treesitter ()
             -- `false` will disable the whole extension
             enable = true,
             disable = 
-                function(lang, buf)
+                function (lang, buf)
                     if lang == "html" then
-                        print("disabled")
+                        print ("disabled")
                         return true
                     end
 
                     local max_filesize = 100 * 1024 -- 100 KB
-                    local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                    local ok, stats = pcall (vim.loop.fs_stat, vim.api.nvim_buf_get_name (buf))
                     if ok and stats and stats.size > max_filesize then
-                        vim.notify(
+                        vim.notify (
                             "File larger than 100KB treesitter disabled for performance",
                             vim.log.levels.WARN,
                             {title = "Treesitter"}
@@ -112,7 +112,7 @@ local function setup_lsp ()
     }
 
     vim.lsp.config ("*", {
-        capabilities = require('cmp_nvim_lsp').default_capabilities()
+        capabilities = require ('cmp_nvim_lsp').default_capabilities ()
     });
 
     vim.lsp.config ("clangd", {
@@ -124,36 +124,36 @@ local function setup_lsp ()
     end
 
     vim.api.nvim_create_autocmd ('LspAttach', {
-        callback = function(e)
+        callback = function (e)
             local opts = { buffer = e.buf }
 
             vim.bo [e.buf].formatexpr = nil
             vim.bo [e.buf].omnifunc = nil
 
-            local client = vim.lsp.get_client_by_id(e.data.client_id)
+            local client = vim.lsp.get_client_by_id (e.data.client_id)
             if client.server_capabilities.signatureHelpProvider then
-                -- require('lsp-overloads').setup(client, { })
+                -- require ('lsp-overloads').setup (client, { })
             end
 
-            vim.keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<cr>", opts)
-            vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, opts)
-            vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
-            vim.keymap.set("n", "<leader>lc", function() vim.lsp.buf.code_action() end, opts)
-            vim.keymap.set("n", "<leader>lrr", "<cmd>Telescope lsp_references<cr>", opts)
-            vim.keymap.set("n", "<leader>ls", "<cmd>LspClangdSwitchSourceHeader<cr>", opts)
-            vim.keymap.set("n", "<leader>li", "<cmd>Telescope lsp_implementations<cr>", opts)
-            vim.keymap.set("n", "<leader>lrn", function() vim.lsp.buf.rename() end, opts)
-            vim.keymap.set("n", "<leader>=", function() vim.lsp.buf.format() end, opts)
-            vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
-            vim.keymap.set("n", "]d", function() vim.diagnostic.goto_next() end, opts)
-            vim.keymap.set("n", "[d", function() vim.diagnostic.goto_prev() end, opts)
-            -- vim.keymap.set("n", '<space>e', function () vim.lsp.diagnostic.show_line_diagnostics () end, opts) 
+            vim.keymap.set ("n", "gd", "<cmd>Telescope lsp_definitions<cr>", opts)
+            vim.keymap.set ("n", "gD", function () vim.lsp.buf.declaration () end, opts)
+            vim.keymap.set ("n", "K", function () vim.lsp.buf.hover () end, opts)
+            vim.keymap.set ("n", "<leader>lc", function () vim.lsp.buf.code_action () end, opts)
+            vim.keymap.set ("n", "<leader>lrr", "<cmd>Telescope lsp_references<cr>", opts)
+            vim.keymap.set ("n", "<leader>ls", "<cmd>LspClangdSwitchSourceHeader<cr>", opts)
+            vim.keymap.set ("n", "<leader>li", "<cmd>Telescope lsp_implementations<cr>", opts)
+            vim.keymap.set ("n", "<leader>lrn", function () vim.lsp.buf.rename () end, opts)
+            vim.keymap.set ("n", "<leader>=", function () vim.lsp.buf.format () end, opts)
+            vim.keymap.set ("i", "<C-h>", function () vim.lsp.buf.signature_help () end, opts)
+            vim.keymap.set ("n", "]d", function () vim.diagnostic.goto_next () end, opts)
+            vim.keymap.set ("n", "[d", function () vim.diagnostic.goto_prev () end, opts)
+            -- vim.keymap.set ("n", '<space>e', function () vim.lsp.diagnostic.show_line_diagnostics () end, opts) 
         end
     })
 end
 
 local function setup_gitsigns ()
-    require('gitsigns').setup {
+    require ('gitsigns').setup {
         sign_priority = 1,
         current_line_blame_formatter = '<author>, <author_time:%R> - <summary> (<abbrev_sha>)',
 
@@ -169,52 +169,57 @@ local function setup_gitsigns ()
             change = { text = "~" },
         },
 
-        on_attach = function(bufnr)
-            local gitsigns = require('gitsigns')
+        on_attach = function (bufnr)
+            local gitsigns = require ('gitsigns')
 
-            local function map(mode, l, r, opts)
+            local function map (mode, l, r, opts)
                 opts = opts or {}
                 opts.buffer = bufnr
-                vim.keymap.set(mode, l, r, opts)
+                vim.keymap.set (mode, l, r, opts)
             end
 
             -- Navigation
-            map('n', ']c', function()
+            map ('n', ']c', function ()
                 if vim.wo.diff then
-                    vim.cmd.normal({']c', bang = true})
+                    vim.cmd.normal ({ ']c', bang = true })
                 else
-                    gitsigns.nav_hunk('next')
+                    gitsigns.nav_hunk ('next')
                 end
             end)
 
-            map('n', '[c', function()
+            map ('n', '[c', function ()
                 if vim.wo.diff then
-                    vim.cmd.normal({'[c', bang = true})
+                    vim.cmd.normal ( {'[c', bang = true} )
                 else
-                    gitsigns.nav_hunk('prev')
+                    gitsigns.nav_hunk ('prev')
                 end
             end)
 
             -- Actions
-            map('n', '<leader>hs', gitsigns.stage_hunk)
-            map('n', '<leader>hu', gitsigns.undo_stage_hunk)
-            map('n', '<leader>hr', gitsigns.reset_hunk)
-            map('v', '<leader>hs', function() gitsigns.stage_hunk({ vim.fn.line('.'), vim.fn.line('v') }) end)
-            map('v', '<leader>hr', function() gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') }) end)
-            map('n', '<leader>hS', gitsigns.stage_buffer)
-            map('n', '<leader>hR', gitsigns.reset_buffer)
-            map('n', '<leader>hp', gitsigns.preview_hunk)
-            map('n', '<leader>hi', gitsigns.preview_hunk_inline)
-            map('n', '<leader>hb', function() gitsigns.blame_line({ full = true }) end)
-            map('n', '<leader>hd', gitsigns.diffthis)
-            map('n', '<leader>hD', function() gitsigns.diffthis('~') end)
-            map('n', '<leader>hQ', function() gitsigns.setqflist('all') end)
-            map('n', '<leader>hq', gitsigns.setqflist)
+            map ('n', '<leader>hs', gitsigns.stage_hunk)
+            map ('n', '<leader>hu', gitsigns.undo_stage_hunk)
+            map ('n', '<leader>hr', gitsigns.reset_hunk)
+
+            map ('v', '<leader>hs', function () gitsigns.stage_hunk (
+                { vim.fn.line ('.'), vim.fn.line ('v') } ) end)
+
+            map ('v', '<leader>hr', function () gitsigns.reset_hunk (
+                { vim.fn.line ('.'), vim.fn.line ('v') } ) end)
+
+            map ('n', '<leader>hS', gitsigns.stage_buffer)
+            map ('n', '<leader>hR', gitsigns.reset_buffer)
+            map ('n', '<leader>hp', gitsigns.preview_hunk)
+            map ('n', '<leader>hi', gitsigns.preview_hunk_inline)
+            map ('n', '<leader>hb', function () gitsigns.blame_line ( { full = true } ) end)
+            map ('n', '<leader>hd', gitsigns.diffthis)
+            map ('n', '<leader>hD', function () gitsigns.diffthis ('~') end)
+            map ('n', '<leader>hQ', function () gitsigns.setqflist ('all') end)
+            map ('n', '<leader>hq', gitsigns.setqflist)
             -- Toggles
-            map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
-            -- map('n', '<leader>tw', gitsigns.toggle_word_diff)
+            map ('n', '<leader>tb', gitsigns.toggle_current_line_blame)
+            -- map ('n', '<leader>tw', gitsigns.toggle_word_diff)
             -- Text object
-            map({'o', 'x'}, 'ih', gitsigns.select_hunk)
+            map ( {'o', 'x' }, 'ih', gitsigns.select_hunk)
         end
     }
 end
@@ -242,14 +247,14 @@ local function setup_harpoon ()
     local harpoon = require ("harpoon")
     harpoon:setup ()
     -- <leader>h (harpoon)
-    nmap("<leader>ha", function() harpoon:list ():add() end)
-    nmap("<leader>he", function () harpoon.ui:toggle_quick_menu(harpoon:list()) end )
-    nmap("<leader>1", function() harpoon:list ():select (1) end, 'Harpoon 1')
-    nmap("<leader>2", function() harpoon:list ():select (2) end, 'Harpoon 2')
-    nmap("<leader>3", function() harpoon:list ():select (3) end, 'Harpoon 3')
-    nmap("<leader>4", function() harpoon:list ():select (4) end, 'Harpoon 4')
-    nmap("<leader>5", function() harpoon:list ():select (5) end, 'Harpoon 5')
-    nmap("<leader>6", function() harpoon:list ():select (6) end, 'Harpoon 6')
+    nmap ("<leader>ha", function () harpoon:list ():add () end)
+    nmap ("<leader>he", function () harpoon.ui:toggle_quick_menu(harpoon:list ()) end )
+    nmap ("<leader>1", function () harpoon:list ():select (1) end, 'Harpoon 1')
+    nmap ("<leader>2", function () harpoon:list ():select (2) end, 'Harpoon 2')
+    nmap ("<leader>3", function () harpoon:list ():select (3) end, 'Harpoon 3')
+    nmap ("<leader>4", function () harpoon:list ():select (4) end, 'Harpoon 4')
+    nmap ("<leader>5", function () harpoon:list ():select (5) end, 'Harpoon 5')
+    nmap ("<leader>6", function () harpoon:list ():select (6) end, 'Harpoon 6')
 end
 
 local function setup_minisurround ()
