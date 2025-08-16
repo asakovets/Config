@@ -224,14 +224,6 @@ nmap('<leader>ts', '<cmd>set spell!<cr>')
 nmap('<leader>tw', '<cmd>set wrap!<cr>')
 nmap('<leader>tk', ':tabclose<cr>', "Kill tab")
 
-nmap('<leader>tt', function ()
-    if not vim.g.isatty then
-        require ("themes/mono").light ()
-    else
-        require ("themes/mono").dark ()
-    end
-end)
-
 -- u (inspect)
 nmap('<leader>ui', '<cmd>Inspect<cr>')
 nmap('<leader>uI', '<cmd>InspectTree<cr>')
@@ -307,3 +299,22 @@ local _, _ = pcall (require, "local_custom")
 if os.getenv ("TERM_PROGRAM") == "Apple_Terminal" then
     o.termguicolors = false
 end
+
+local function theme_apply ()
+    if not vim.g.isatty then
+        require ("themes/mono").light ()
+    else
+        -- require ("themes/mono").dark ()
+    end
+end
+
+nmap('<leader>tt', function ()
+    theme_apply ()
+end)
+
+autocmd('BufEnter', {
+    group = Themes,
+    callback = function()
+        theme_apply ()
+    end
+})
