@@ -33,7 +33,7 @@ vim.g.cmptoggle = true
 -- vim.opt.formatoptions:remove "o"
 
 if vim.g.neovide then
-    vim.g.neovide_opacity = 0.95
+    vim.g.neovide_opacity = 1.0
     vim.g.neovide_background_color = "#eeeeee"
     vim.g.neovide_theme = 'light'
     vim.g.neovide_position_animation_length = 0
@@ -46,6 +46,9 @@ if vim.g.neovide then
 
     vim.keymap.set({"n", "v"}, "<C-+>", function() vim.g.neovide_scale_factor = (vim.g.neovide_scale_factor or 1.0) + 0.1 end)
     vim.keymap.set({"n", "v"}, "<C-->", function() vim.g.neovide_scale_factor = (vim.g.neovide_scale_factor or 1.0) - 0.1 end)
+
+    vim.g.neovide_hide_mouse_when_typing = true
+    vim.g.neovide_padding_left = 8
 end
 
 
@@ -251,7 +254,9 @@ local function set_transparency ()
     vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
 end
 
-set_transparency ()
+if not vim.g.neovide then
+    set_transparency ()
+end
 
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
