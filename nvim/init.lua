@@ -289,6 +289,8 @@ end
 vim.api.nvim_create_user_command("DeleteTrailingWhitespace",
     delete_trailing_whitespace, {})
 
+nmap('<leader>,', delete_trailing_whitespace, 'Delete trailing whitespace')
+
 require ("plugins")
 local _, _ = pcall (require, "local_custom")
 
