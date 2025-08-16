@@ -32,6 +32,8 @@ o.signcolumn = "yes"
 vim.g.cmptoggle = true
 -- vim.opt.formatoptions:remove "o"
 
+vim.g.isatty = (vim.fn.has('gui_running') == 0)
+
 if vim.g.neovide then
     vim.g.neovide_opacity = 1.0
     vim.g.neovide_background_color = "#eeeeee"
@@ -221,7 +223,14 @@ nmap('<leader>tn', '<cmd>set number!<cr>')
 nmap('<leader>ts', '<cmd>set spell!<cr>')
 nmap('<leader>tw', '<cmd>set wrap!<cr>')
 nmap('<leader>tk', ':tabclose<cr>', "Kill tab")
-nmap('<leader>tt', function () vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' }) end)
+
+nmap('<leader>tt', function ()
+    if not vim.g.isatty then
+        require ("themes/mono").light ()
+    else
+        require ("themes/mono").dark ()
+    end
+end)
 
 -- u (inspect)
 nmap('<leader>ui', '<cmd>Inspect<cr>')
