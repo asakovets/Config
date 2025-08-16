@@ -245,59 +245,12 @@ nmap('<leader>ww', '<C-w>w')
 nmap('<leader>wt', '<C-w>T')
 nmap('<leader>w=', '<C-w>=')
 
-
---
-
-vim.diagnostic.config {
-    signs = false,
-}
-
-function myproject()
-    local u = require "util"
-    return u.get_root() or u.bufdir (0)
-end
-
 local function set_transparency ()
     vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
 end
 
 if not vim.g.neovide then
     set_transparency ()
-end
-
-local augroup = vim.api.nvim_create_augroup
-local autocmd = vim.api.nvim_create_autocmd
-
-local yankgrp = augroup ("yankgrp", {})
-
-autocmd('TextYankPost', {
-    group = yankgrp,
-    pattern = '*',
-    callback = function()
-        vim.highlight.on_yank({
-            higroup = 'IncSearch',
-            timeout = 100,
-        })
-    end,
-})
-
-vim.api.nvim_create_user_command("DeleteTrailingWhitespace",
-    function ()
-        local view = vim.fn.winsaveview ()
-        -- Remove trailing whitespace
-        vim.cmd([[%s/\s\+$//e]])
-
-        -- Remove trailing newlines
-        vim.cmd([[%s/\n\+\%$//e]])
-        vim.fn.winrestview (view)
-    end , {})
-
-require ("plugins")
-local _, _ = pcall (require, "local_custom")
-
--- quirks
-if os.getenv ("TERM_PROGRAM") == "Apple_Terminal" then
-    o.termguicolors = false
 end
 
 local function theme_apply ()
@@ -312,9 +265,70 @@ nmap('<leader>tt', function ()
     theme_apply ()
 end)
 
+--
+
+vim.diagnostic.config {
+    signs = false,
+}
+
+function myproject()
+    local u = require "util"
+    return u.get_root() or u.bufdir (0)
+end
+
+function delete_trailing_whitespace ()
+    local view = vim.fn.winsaveview ()
+    -- Remove trailing whitespace
+    vim.cmd([[%s/\s\+$//e]])
+
+    -- Remove trailing newlines
+    -- vim.cmd([[%s/\n\+\%$//e]])
+    vim.fn.winrestview (view)
+end
+
+vim.api.nvim_create_user_command("DeleteTrailingWhitespace",
+    delete_trailing_whitespace, {})
+
+require ("plugins")
+local _, _ = pcall (require, "local_custom")
+
+-- quirks
+if os.getenv ("TERM_PROGRAM") == "Apple_Terminal" then
+    o.termguicolors = false
+end
+
+-- Autocommands begin
+local augroup = vim.api.nvim_create_augroup
+local autocmd = vim.api.nvim_create_autocmd
+
+local yankgrp = augroup ("yankgrp", {})
+local themegrp = augroup ("themegrp", {})
+local onsavegrp = augroup ("onsavegrp", {})
+
+autocmd('TextYankPost', {
+    group = yankgrp,
+    pattern = '*',
+    callback = function()
+        vim.highlight.on_yank({
+            higroup = 'IncSearch',
+            timeout = 100,
+        })
+    end,
+})
+
 autocmd('BufEnter', {
-    group = Themes,
+    group = themegrp,
     callback = function()
         theme_apply ()
     end
 })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+    group = onsavegrp,
+    pattern = "*",
+    callback = function()
+        -- delete_trailing_whitespace ()
+    end,
+})
+
+-- Autocommands end
