@@ -180,6 +180,12 @@ nmap('<leader>fd', function ()
     })
 end)
 
+vim.keymap.set ("n", "<leader>ep", function ()
+    require ("util").find_files ({
+        cwd = vim.fs.joinpath (vim.fn.stdpath ("data"), "lazy")
+    })
+end)
+
 nmap('<leader>fr', '<cmd>Telescope oldfiles<cr>')
 --
 
