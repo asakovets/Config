@@ -1,0 +1,6 @@
+frame = "none"
+theme = "light"
+
+[font]
+normal = ["IBM Plex Mono"]
+# size = 14.0
