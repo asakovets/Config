@@ -19,7 +19,7 @@ def local_config_dir():
 
 def roaming_config_dir():
     if is_posix:
-        return local_config_dir
+        return local_config_dir ()
     else:
         return os.path.expanduser("~/AppData/Roaming/")
 
