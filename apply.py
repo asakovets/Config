@@ -6,11 +6,37 @@ import os.path
 from pathlib import Path
 import platform
 import shutil
+import subprocess
 from collections import namedtuple
 
 WINDOWS: bool = platform.system() == "Windows"
 MACOS: bool = platform.system() == "Darwin"
 LINUX: bool = platform.system() == "Linux"
+
+IDEAL_BRANCH = "main"
+LOCAL_BRANCH = "local"
+
+
+def proc_spawn(*args, **kwargs):
+    cmd = [*args]
+    print("running", cmd)
+    return subprocess.run(cmd, **kwargs)
+
+
+def git_new_branch(branch_name):
+    return proc_spawn("git", "branch", branch_name)
+
+
+def git_switch_branch(branch_name):
+    return proc_spawn("git", "switch", branch_name)
+
+
+def git_commit():
+    return proc_spawn("git", "commit")
+
+
+def to_posix_path(p):
+    return p.replace("\\", "/")
 
 
 class PathResolver(object):
@@ -174,6 +200,7 @@ def main():
                 print(f"Ignoring {a}")
         else:
             b = os.path.expanduser(b)
+            b = to_posix_path(b)
             if args.clean:
                 if args.dry_run:
                     print("Will remove", b)
@@ -186,17 +213,39 @@ def main():
                         shutil.rmtree(str(p))
 
             else:
-                if args.dry_run:
-                    # print("Will link", b, "->", a)
-                    print("Will copy", a, "->", b)
-                else:
-                    a = os.path.join(os.path.dirname(__file__), a)
-                    print("copy", a, "->", b)
-                    # make_symlink(a, b)
-                    if os.path.isdir(a):
-                        shutil.copytree(a, b, dirs_exist_ok=True)
+
+                def mklink(target, link):
+                    assert os.path.isabs(link), f"not absolute path: {link}"
+                    assert os.path.isabs(target), f"not absolute path: {target}"
+
+                    if args.dry_run:
+                        print("Will link", link, "->", target)
                     else:
-                        shutil.copy2(a, b)
+                        dir = os.path.dirname(link)
+                        os.makedirs(dir, exist_ok=True)
+                        print("mklink", link, "->", target)
+                        make_symlink(target, link)
+
+                basedir = os.path.dirname(__file__)
+                source_file = os.path.join(basedir, a)
+                source_file = to_posix_path(source_file)
+
+                if os.path.isfile(source_file):
+                    if not os.path.exists(source_file):
+                        print(f"not a valid path: {a}")
+                    else:
+                        mklink(source_file, b)
+
+                else:
+                    if args.dry_run:
+                        print("Will mkdir -p", b)
+                    else:
+                        print("mkdir -p", b)
+                        os.makedirs(b, exist_ok=True)
+                    for target in os.listdir(source_file):
+                        mklink(
+                            os.path.join(source_file, target), os.path.join(b, target)
+                        )
 
     apply(config, resolver)
 
