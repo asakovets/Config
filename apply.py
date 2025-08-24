@@ -141,7 +141,7 @@ def tool(name, config, resolver):
     return RArrow(name, c)
 
 
-def apply(config, resolver):
+def bind_links(config, resolver):
     def t(name):
         return tool(name, config, resolver)
 
@@ -151,7 +151,7 @@ def apply(config, resolver):
 
     ripgreprc >> "~/.config/ripgreprc"
 
-    neovide >> (win >> "%LocalAppData%/neovide", any >> "~/.config/neovide")
+    neovide >> (win >> "%RoamingAppData%/neovide", any >> "~/.config/neovide")
 
     clangd >> (
         win >> "%LocalAppData%/clangd",
@@ -160,7 +160,15 @@ def apply(config, resolver):
     )
 
 
-def symlink():
+def setlinks(command, dryrun):
+    resolver = PathResolver()
+    if WINDOWS:
+        resolver.add("LocalAppData", "~/AppData/Local/")
+        resolver.add("RoamingAppData", "~/AppData/Roaming/")
+
+    if MACOS:
+        resolver.add("LibraryPreferences", "~/Library/Preferences")
+
     def config(a, b):
         if type(b) is Ignore:
             if b.reason:
@@ -170,8 +178,8 @@ def symlink():
         else:
             b = os.path.expanduser(b)
             b = to_posix_path(b)
-            if args.clean:
-                if args.dry_run:
+            if command == "clean":
+                if dryrun:
                     print("Will remove", b)
                 else:
                     p = Path(b)
@@ -187,7 +195,7 @@ def symlink():
                     assert os.path.isabs(link), f"not absolute path: {link}"
                     assert os.path.isabs(target), f"not absolute path: {target}"
 
-                    if args.dry_run:
+                    if dryrun:
                         print("Will link", link, "->", target)
                     else:
                         dir = os.path.dirname(link)
@@ -206,7 +214,7 @@ def symlink():
                         mklink(source_file, b)
 
                 else:
-                    if args.dry_run:
+                    if dryrun:
                         print("Will mkdir -p", b)
                     else:
                         print("mkdir -p", b)
@@ -216,7 +224,7 @@ def symlink():
                             os.path.join(source_file, target), os.path.join(b, target)
                         )
 
-    apply(config, resolver)
+    bind_links(config, resolver)
 
 
 def init():
@@ -275,12 +283,13 @@ def main():
     parser_init = subparsers.add_parser("init", help="Init")
     parser_apply = subparsers.add_parser("apply", help="Apply")
     parser_fetch = subparsers.add_parser("fetch", help="Fetch")
-    parser_symlink = subparsers.add_parser("symlink", help="Symlink")
+    parser_symlink = subparsers.add_parser("setlinks", help="Symlink")
+    parser_clean = subparsers.add_parser("clean", help="Clean")
 
     args = parser.parse_args()
 
     global gVerbose
-    gVerbose = bool(args.verbose)
+    # gVerbose = bool(args.verbose)
     gVerbose = True
 
     if args.sys:
@@ -295,8 +304,8 @@ def main():
         apply()
     elif args.command == "fetch":
         fetch()
-    elif args.command == "symlink":
-        symlink()
+    elif args.command == "setlinks" or args.command == "clean":
+        setlinks(args.command, args.dry_run)
 
 
 if __name__ == "__main__":
