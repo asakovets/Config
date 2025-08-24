@@ -78,42 +78,53 @@ class RArrow(object):
         return self.cb(self.left, right)
 
 
+ConfigPath = namedtuple("ConfigPath", ["path", "prio"])
+
+
+def r(resolver, *args):
+    cur = None
+    for arg in args:
+        path_rule = arg()
+        if path_rule:
+            if not cur:
+                cur = path_rule
+            elif path_rule.prio > cur.prio:
+                cur = path_rule
+    if cur:
+        if type(cur.path) is Ignore:
+            return cur.path
+        return resolver.resolve(cur.path)
+    return Ignore()
+
+
+win = RArrow(100, lambda l, r: lambda: None if not WINDOWS else ConfigPath(r, l))
+mac = RArrow(100, lambda l, r: lambda: None if not MACOS else ConfigPath(r, l))
+lin = RArrow(100, lambda l, r: lambda: None if not LINUX else ConfigPath(r, l))
+any = RArrow(10, lambda l, r: lambda: ConfigPath(r, l))
+
+
+def tool(name, config, resolver):
+    def c(left, right):
+        if type(right) is tuple:
+            right = r(resolver, *right)
+        config(left, right)
+
+    return RArrow(name, c)
+
+
 def apply(config, resolver):
-    ConfigPath = namedtuple("ConfigPath", ["path", "prio"])
+    def t(name):
+        return tool(name, config, resolver)
 
-    def r(*args):
-        cur = None
-        for arg in args:
-            path_rule = arg()
-            if path_rule:
-                if not cur:
-                    cur = path_rule
-                elif path_rule.prio > cur.prio:
-                    cur = path_rule
-        if cur:
-            if type(cur.path) is Ignore:
-                return cur.path
-            return resolver.resolve(cur.path)
-        return Ignore()
+    ripgreprc = t("ripgreprc")
+    neovide = t("neovide")
+    clangd = t("clangd")
 
-    def _(left):
-        def c(left, right):
-            if type(right) is tuple:
-                right = r(*right)
-            config(left, right)
+    ripgreprc >> "~/.config/ripgreprc"
 
-        return RArrow(left, c)
+    neovide >> (win >> "%LocalAppData%/neovide", any >> "~/.config/neovide")
 
-    win = RArrow(100, lambda l, r: lambda: None if not WINDOWS else ConfigPath(r, l))
-    mac = RArrow(100, lambda l, r: lambda: None if not MACOS else ConfigPath(r, l))
-    lin = RArrow(100, lambda l, r: lambda: None if not LINUX else ConfigPath(r, l))
-    any = RArrow(10, lambda l, r: lambda: ConfigPath(r, l))
-
-    _("ripgreprc") >> "~/.config/ripgreprc"
-
-    _("neovide") >> (win >> "%LocalAppData%/neovide", any >> "~/.config/neovide")
-
-    _("clangd") >> (
+    clangd >> (
         win >> "%LocalAppData%/clangd",
         lin >> "~/.config/clangd",
         mac >> "%LibraryPreferences%/clangd",
@@ -168,6 +179,7 @@ def main():
                     print("Will remove", b)
                 else:
                     p = Path(b)
+                    print("remove", p)
                     if p.is_symlink() or p.is_file():
                         p.unlink()
                     elif p.is_dir():
@@ -175,12 +187,19 @@ def main():
 
             else:
                 if args.dry_run:
-                    print("Will link", b, "->", a)
+                    # print("Will link", b, "->", a)
+                    print("Will copy", a, "->", b)
                 else:
                     a = os.path.join(os.path.dirname(__file__), a)
-                    make_symlink(a, b)
+                    print("copy", a, "->", b)
+                    # make_symlink(a, b)
+                    if os.path.isdir(a):
+                        shutil.copytree(a, b, dirs_exist_ok=True)
+                    else:
+                        shutil.copy2(a, b)
 
     apply(config, resolver)
+
 
 if __name__ == "__main__":
     main()
