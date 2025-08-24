@@ -4,32 +4,57 @@ import argparse
 import os
 import os.path
 from pathlib import Path
+import platform
 import shutil
+from collections import namedtuple
+
+WINDOWS: bool = platform.system() == "Windows"
+MACOS: bool = platform.system() == "Darwin"
+LINUX: bool = platform.system() == "Linux"
 
 
-is_posix = os.name == "posix"
+class PathResolver(object):
+    resolvers: dict
+
+    def __init__(self):
+        self.resolvers = dict()
+
+    def __resolve(self, name):
+        return self.resolvers[name]()
+
+    def add(self, name, resolver):
+        if type(resolver) is str:
+            self.resolvers[name] = lambda: self.resolve(resolver)
+        else:
+            self.resolvers[name] = resolver
+
+    def resolve(self, pat):
+        orig_pat = pat
+        pat = os.path.expanduser(pat)
+        result = str()
+        while pat:
+            if not pat[0] == "%":
+                result += pat[0]
+                pat = pat[1:]
+            else:
+                pat = pat[1:]
+                p = pat.find("%")
+                assert p != -1, f"invalid pattern: {orig_pat}"
+                name = pat[:p]
+                result += self.__resolve(name)
+                pat = pat[p + 1 :]
+        return result
 
 
-def local_config_dir():
-    if is_posix:
-        return os.path.expanduser("~/.config/")
-    else:
-        return os.path.expanduser("~/AppData/Local/")
+class Ignore(Path):
+    reason: str
+
+    def __init__(self, reason="", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reason = reason
 
 
-def roaming_config_dir():
-    if is_posix:
-        return local_config_dir ()
-    else:
-        return os.path.expanduser("~/AppData/Roaming/")
-
-
-def local(s):
-    return os.path.join(local_config_dir(), s)
-
-
-def roaming(s):
-    return os.path.join(roaming_config_dir(), s)
+IGNORE = Ignore()
 
 
 def make_symlink(target, link_name):
@@ -41,32 +66,61 @@ def make_symlink(target, link_name):
     os.symlink(target, link_name, target_is_directory=os.path.isdir(target))
 
 
-def config__create(source_loc, destination_loc, opts):
-    source_loc = os.path.join(os.path.dirname(__file__), source_loc)
-    make_symlink(source_loc, destination_loc)
+class RArrow(object):
+    left: object
+    cb: object
+
+    def __init__(self, left, cb):
+        self.left = left
+        self.cb = cb
+
+    def __rshift__(self, right):
+        return self.cb(self.left, right)
 
 
-def config__prune(source_loc, destination_loc, opts):
-    p = Path(destination_loc)
-    if p.is_symlink() or p.is_file():
-        p.unlink()
-    elif p.is_dir():
-        shutil.rmtree(str(p))
+def apply(config, resolver):
+    ConfigPath = namedtuple("ConfigPath", ["path", "prio"])
 
+    def r(*args):
+        cur = None
+        for arg in args:
+            path_rule = arg()
+            if path_rule:
+                if not cur:
+                    cur = path_rule
+                elif path_rule.prio > cur.prio:
+                    cur = path_rule
+        if cur:
+            if type(cur.path) is Ignore:
+                return cur.path
+            return resolver.resolve(cur.path)
+        return Ignore()
 
-def config__dry_run(source_loc, destination_loc, opts):
-    print(f" {source_loc} => {destination_loc}")
+    def _(left):
+        def c(left, right):
+            if type(right) is tuple:
+                right = r(*right)
+            config(left, right)
 
+        return RArrow(left, c)
 
-def apply(config):
-    config("ripgreprc", local("ripgreprc"))
-    config("neovide", roaming("neovide"))
+    win = RArrow(100, lambda l, r: lambda: None if not WINDOWS else ConfigPath(r, l))
+    mac = RArrow(100, lambda l, r: lambda: None if not MACOS else ConfigPath(r, l))
+    lin = RArrow(100, lambda l, r: lambda: None if not LINUX else ConfigPath(r, l))
+    any = RArrow(10, lambda l, r: lambda: ConfigPath(r, l))
+
+    _("ripgreprc") >> "~/.config/ripgreprc"
+
+    _("neovide") >> (win >> "%LocalAppData%/neovide", any >> "~/.config/neovide")
+
+    _("clangd") >> (
+        win >> "%LocalAppData%/clangd",
+        lin >> "~/.config/clangd",
+        mac >> "%LibraryPreferences%/clangd",
+    )
 
 
 def main():
-    opts = ""
-    config_impl = config__create
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-n",
@@ -76,16 +130,57 @@ def main():
         help="Just show what would be done",
     )
 
-    args = parser.parse_args()
+    parser.add_argument(
+        "-c",
+        "--clean",
+        dest="clean",
+        action="store_true",
+        help="Remove configuration files",
+    )
 
-    if args.dry_run:
-        config_impl = config__dry_run
+    parser.add_argument("--sys", dest="sys", choices=["win", "linux", "macos"])
+
+    args = parser.parse_args()
+    if args.sys:
+        global WINDOWS, LINUX, MACOS
+        WINDOWS = args.sys == "win"
+        LINUX = args.sys == "linux"
+        MACOS = args.sys == "macos"
+
+    resolver = PathResolver()
+    if WINDOWS:
+        resolver.add("LocalAppData", "~/AppData/Local/")
+        resolver.add("RoamingAppData", "~/AppData/Roaming/")
+
+    if MACOS:
+        resolver.add("LibraryPreferences", "~/Library/Preferences")
 
     def config(a, b):
-        config_impl(a, b, opts)
+        if type(b) is Ignore:
+            if b.reason:
+                print(f"Ignoring {a}: {b.reason}")
+            else:
+                print(f"Ignoring {a}")
+        else:
+            b = os.path.expanduser(b)
+            if args.clean:
+                if args.dry_run:
+                    print("Will remove", b)
+                else:
+                    p = Path(b)
+                    if p.is_symlink() or p.is_file():
+                        p.unlink()
+                    elif p.is_dir():
+                        shutil.rmtree(str(p))
 
-    apply(config)
+            else:
+                if args.dry_run:
+                    print("Will link", b, "->", a)
+                else:
+                    a = os.path.join(os.path.dirname(__file__), a)
+                    make_symlink(a, b)
 
+    apply(config, resolver)
 
 if __name__ == "__main__":
     main()
