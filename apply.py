@@ -230,12 +230,16 @@ def apply():
         git_switch_branch("main")
         proc_spawn("git", "cherry-pick", "local")
         git_switch_branch("local")
-        proc_spawn("git", "merge", "--no-ff", "main")
+        proc_spawn(
+            "git", "merge", "--no-ff", "main", "-m", "Merge branch 'main' into local"
+        )
 
 
 def fetch():
     proc_spawn("git", "fetch", "origin", "main")
-    proc_spawn("git", "merge", "--no-ff", "main")
+    proc_spawn(
+        "git", "merge", "--no-ff", "main", "-m", "Merge branch 'main' into local"
+    )
 
 
 def main():
