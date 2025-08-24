@@ -245,9 +245,11 @@ def apply():
 
 def fetch():
     proc_spawn("git", "fetch", "origin", "main")
+    proc_spawn("git", "stash")
     proc_spawn(
         "git", "merge", "--no-ff", "main", "-m", "Merge branch 'main' into local"
     )
+    proc_spawn("git", "stash", "pop")
 
 
 def main():
