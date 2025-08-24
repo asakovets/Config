@@ -16,10 +16,13 @@ LINUX: bool = platform.system() == "Linux"
 IDEAL_BRANCH = "main"
 LOCAL_BRANCH = "local"
 
+gVerbose: bool = False
+
 
 def proc_spawn(*args, **kwargs):
     cmd = [*args]
-    print("running", cmd)
+    if gVerbose:
+        print("running", cmd)
     return subprocess.run(cmd, **kwargs)
 
 
@@ -157,41 +160,7 @@ def apply(config, resolver):
     )
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-n",
-        "--dry-run",
-        dest="dry_run",
-        action="store_true",
-        help="Just show what would be done",
-    )
-
-    parser.add_argument(
-        "-c",
-        "--clean",
-        dest="clean",
-        action="store_true",
-        help="Remove configuration files",
-    )
-
-    parser.add_argument("--sys", dest="sys", choices=["win", "linux", "macos"])
-
-    args = parser.parse_args()
-    if args.sys:
-        global WINDOWS, LINUX, MACOS
-        WINDOWS = args.sys == "win"
-        LINUX = args.sys == "linux"
-        MACOS = args.sys == "macos"
-
-    resolver = PathResolver()
-    if WINDOWS:
-        resolver.add("LocalAppData", "~/AppData/Local/")
-        resolver.add("RoamingAppData", "~/AppData/Roaming/")
-
-    if MACOS:
-        resolver.add("LibraryPreferences", "~/Library/Preferences")
-
+def symlink():
     def config(a, b):
         if type(b) is Ignore:
             if b.reason:
@@ -248,6 +217,82 @@ def main():
                         )
 
     apply(config, resolver)
+
+
+def init():
+    git_new_branch(LOCAL_BRANCH)
+    git_switch_branch(LOCAL_BRANCH)
+
+
+def apply():
+    rc = git_commit()
+    if rc.returncode == 0:
+        git_switch_branch("main")
+        proc_spawn("git", "cherry-pick", "local")
+        git_switch_branch("local")
+        proc_spawn("git", "merge", "main")
+
+
+def fetch():
+    proc_spawn("git", "fetch", "origin", "main")
+    proc_spawn("git", "merge", "main")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-n",
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Just show what would be done",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--clean",
+        dest="clean",
+        action="store_true",
+        help="Remove configuration files",
+    )
+
+    parser.add_argument(
+        "--sys",
+        dest="sys",
+        choices=["win", "linux", "macos"],
+        help="Override operating system",
+    )
+    parser.add_argument(
+        "-v", "--verbose", dest="verbose", action="store_true", help="Be verbose"
+    )
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    parser_init = subparsers.add_parser("init", help="Init")
+    parser_apply = subparsers.add_parser("apply", help="Apply")
+    parser_fetch = subparsers.add_parser("fetch", help="Fetch")
+    parser_symlink = subparsers.add_parser("symlink", help="Symlink")
+
+    args = parser.parse_args()
+
+    global gVerbose
+    gVerbose = bool(args.verbose)
+    gVerbose = True
+
+    if args.sys:
+        global WINDOWS, LINUX, MACOS
+        WINDOWS = args.sys == "win"
+        LINUX = args.sys == "linux"
+        MACOS = args.sys == "macos"
+
+    if args.command == "init":
+        init()
+    elif args.command == "apply":
+        apply()
+    elif args.command == "fetch":
+        fetch()
+    elif args.command == "symlink":
+        symlink()
 
 
 if __name__ == "__main__":
