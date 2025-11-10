@@ -1,11 +1,6 @@
 function env { Get-ChildItem Env: }
 function q { exit }
 
-function _dev {
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-    pwsh
-}
-
 Set-Alias -Name which -Value get-command
 Set-Alias -Name o     -Value Start-Process
 
